@@ -67,6 +67,8 @@ variables = c("X_STATE","FMONTH","IDATE","IYEAR","DISPCODE","SEQNO","X_PSU",
               "BIRTHSEX", "TRNSGNDR","MEDCOST","HLTHPLN1","HIVTST7","HIVTSTD3")
 subset_2020 = BRFSS_2020 %>% select(variables)
 
+## BRFSS Year 2021 ##
+
 # Load SAS transport files #
 BRFSS_2021 = read.xport("LLCP2021.XPT") 
 
