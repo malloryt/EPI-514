@@ -392,6 +392,6 @@ rm(list=c("state_conversion","columns","i","j","prop","variables","year_test",
 save.image("clean_BRFSS.RData", compress = "bzip2")
 
 # To load the environmental variables into an R session you would use load() #
-  # Requires ~ 5Gb of memory
+  # Requires ~ 5 Gb of memory
 load("clean_BRFSS.RData")
 
