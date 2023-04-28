@@ -13,7 +13,7 @@ test= BRFSS_merged[test_rows,]
 
 # Create the survey design object
 design <- svydesign(data = test,
-                    id = ~X_PSU, strata = ~X_STSTR, weights = ~LCCPWT_5Y, nest = TRUE)
+                    id = ~X_PSU, strata = ~X_STSTR, weights = ~LLCPWT_5Y, nest = TRUE)
 options(survey.lonely.psu = "adjust")
 
 # Create a table_1
