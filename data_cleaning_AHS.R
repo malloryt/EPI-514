@@ -285,95 +285,84 @@ BRFSS_merged$COV_YEAR = ifelse(BRFSS_merged$BRFSS_YEAR >2019,1,0)
 
 ## Create new weight variables for the merged data set ##
 
-# Reweight responses by state and year #
-  # This should make the survey weights accurate even if we are using a subset of states 
-  # For example, if we want to exclude Guam and Puerto Rico
-  # Or if we are just using the states with the SOGI module
+# Reweight responses by year #
 
-BRFSS_final_merged=NULL
-for (i in unique(BRFSS_merged$X_STATE)) {
-  state = i
-  BRFSS_temp = BRFSS_merged %>% filter(X_STATE==state)
-  year_state_proportions = BRFSS_temp %>% group_by(BRFSS_YEAR) %>% 
-    summarise(prop = n()/nrow(BRFSS_temp))
-  BRFSS_temp2=NULL
-  for (j in 2017:2021) {
-    BRFSS_state_temp = BRFSS_temp %>% filter(BRFSS_YEAR==j)
-    prop = year_state_proportions[j-2016,2] %>% as.numeric()
-    BRFSS_state_temp$state_year_LLCPWT = BRFSS_state_temp$X_LLCPWT * prop
-    BRFSS_temp2 = rbindlist(list(BRFSS_temp2,BRFSS_state_temp))
-  }
-  BRFSS_final_merged=rbindlist(list(BRFSS_final_merged,BRFSS_temp2))
-}
+year_proportions = BRFSS_merged %>% group_by(BRFSS_YEAR) %>% 
+    summarise(prop = n()/nrow(BRFSS_merged)) %>% select(prop) %>% 
+  unlist() %>% as.numeric()
 
-# Remove temporary variables from memory #
-rm(list=c("BRFSS_merged","BRFSS_state_temp","BRFSS_temp","BRFSS_temp2",
-          "year_state_proportions"))
+BRFSS_merged = BRFSS_merged %>%
+  mutate(LLCPWT_5Y = case_when(BRFSS_YEAR==2017 ~ X_LLCPWT*year_proportions[1],
+                               BRFSS_YEAR==2018 ~ X_LLCPWT*year_proportions[2],
+                               BRFSS_YEAR==2019 ~ X_LLCPWT*year_proportions[3],
+                               BRFSS_YEAR==2020 ~ X_LLCPWT*year_proportions[4],
+                               BRFSS_YEAR==2021 ~ X_LLCPWT*year_proportions[5],))
+  
 
 ## Recode BRFSS missing/don't know to NA ##
 
 # 5 year age group #
   # 14 indicates Don't know/Refused/Missing
-BRFSS_final_merged$X_AGEG5YR[BRFSS_final_merged$X_AGEG5YR == 14] <- NA
+BRFSS_merged$X_AGEG5YR[BRFSS_merged$X_AGEG5YR == 14] <- NA
           
 # Sex #
   # Values above 2 indicate Don't know/Refused/Missing
-BRFSS_final_merged$SEX[BRFSS_final_merged$SEX >2 ] <- NA
+BRFSS_merged$SEX[BRFSS_merged$SEX >2 ] <- NA
 
 # Race/Ethnicity grouping #
   # 9 indicates Don't know/Refused/Missing
-BRFSS_final_merged$X_RACE[BRFSS_final_merged$X_RACE == 9 ] <- NA
+BRFSS_merged$X_RACE[BRFSS_merged$X_RACE == 9 ] <- NA
 
 # Employment status #
   # 9 indicates Don't know/Refused/Missing
-BRFSS_final_merged$EMPLOY1[BRFSS_final_merged$EMPLOY1 == 9 ] <- NA
+BRFSS_merged$EMPLOY1[BRFSS_merged$EMPLOY1 == 9 ] <- NA
 
 # Income #
   # Values greater than 8 indicate Don't know/Refused/Missing
-BRFSS_final_merged$INCOME2[BRFSS_final_merged$INCOME2 >8 ] <- NA
+BRFSS_merged$INCOME2[BRFSS_merged$INCOME2 >8 ] <- NA
 
 # Home ownership #
   # Values greater than 8 indicate Don't know/Refused/Missing
-BRFSS_final_merged$RENTHOM1[BRFSS_final_merged$RENTHOM1 >3 ] <- NA
+BRFSS_merged$RENTHOM1[BRFSS_merged$RENTHOM1 >3 ] <- NA
 
 # Education #
   # 9 indicates Don't know/Refused/Missing
-BRFSS_final_merged$X_EDUCAG[BRFSS_final_merged$X_EDUCAG == 9 ] <- NA
+BRFSS_merged$X_EDUCAG[BRFSS_merged$X_EDUCAG == 9 ] <- NA
 
 # Urban/Rural status #
   # Missingness already encoded
 
 # Male sexual orientation #
   # Values greater than 4 indicate Don't know/Refused/Missing
-BRFSS_final_merged$SOMALE[BRFSS_final_merged$SOMALE >4 ] <- NA
+BRFSS_merged$SOMALE[BRFSS_merged$SOMALE >4 ] <- NA
 
 # Female sexual orientation #
   # Values greater than 4 indicate Don't know/Refused/Missing
-BRFSS_final_merged$SOFEMALE[BRFSS_final_merged$SOFEMALE >4 ] <- NA
+BRFSS_merged$SOFEMALE[BRFSS_merged$SOFEMALE >4 ] <- NA
 
 # Birth sex #
   # Values greater than 2 indicate Don't know/Refused/Missing
-BRFSS_final_merged$BIRTHSEX[BRFSS_final_merged$BIRTHSEX >2 ] <- NA
+BRFSS_merged$BIRTHSEX[BRFSS_merged$BIRTHSEX >2 ] <- NA
 
 # Transgender #
   # Values greater than 4 indicate Don't know/Refused/Missing
-BRFSS_final_merged$TRNSGNDR[BRFSS_final_merged$TRNSGNDR >4 ] <- NA
+BRFSS_merged$TRNSGNDR[BRFSS_merged$TRNSGNDR >4 ] <- NA
 
 # Medical cost barriers #
   # Values greater than 2 indicate Don't know/Refused/Missing
-BRFSS_final_merged$MEDCOST[BRFSS_final_merged$MEDCOST >2 ] <- NA
+BRFSS_merged$MEDCOST[BRFSS_merged$MEDCOST >2 ] <- NA
 
 # Health coverage #
   # Values greater than 2 indicate Don't know/Refused/Missing
-BRFSS_final_merged$HLTHPLN1[BRFSS_final_merged$HLTHPLN1 >2 ] <- NA
+BRFSS_merged$HLTHPLN1[BRFSS_merged$HLTHPLN1 >2 ] <- NA
 
 # Ever HIV test #
   # Values greater than 2 indicate Don't know/Refused/Missing
-BRFSS_final_merged$HIVTST6[BRFSS_final_merged$HIVTST6 >2 ] <- NA
+BRFSS_merged$HIVTST6[BRFSS_merged$HIVTST6 >2 ] <- NA
 
 # Clean environment #
-rm(list=c("state_conversion","columns","i","j","prop","variables","year_test",
-          "add_state_name","state"))
+rm(list=c("state_conversion","columns","variables","year_test",
+          "add_state_name","year_proportions"))
 
 
 ## Final notes ##
@@ -393,5 +382,4 @@ save.image("clean_BRFSS.RData", compress = "bzip2")
 
 # To load the environmental variables into an R session you would use load() #
   # Requires ~ 5 Gb of memory
-load("clean_BRFSS.RData")
-
+#load("clean_BRFSS.RData")
