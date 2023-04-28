@@ -5,11 +5,7 @@ library(gtsummary)
 
 load("C:/Users/austi/Downloads/clean_BRFSS.RData")
 
-# Drop New Jersy (will not have to do this soon)
-test= BRFSS_final_merged[BRFSS_final_merged$X_STATE!=34]
-
-
-# Subset to a random set of 1000 rows
+# Subset to a random set of 1000 rows to test creating the table
 test_rows = sample(1:nrow(test),1000,replace = FALSE)
 test= test[test_rows,]
 
