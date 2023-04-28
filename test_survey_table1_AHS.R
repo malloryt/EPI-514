@@ -9,7 +9,7 @@ load("clean_BRFSS.RData")
 
 # Subset to a random set of 1000 rows to test creating the table
 test_rows = sample(1:nrow(BRFSS_merged),1000,replace = FALSE)
-test= test[test_rows,]
+test= BRFSS_merged[test_rows,]
 
 # Create the survey design object
 design <- svydesign(data = test,
