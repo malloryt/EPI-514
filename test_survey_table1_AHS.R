@@ -8,8 +8,20 @@ library(gtsummary)
 load("clean_BRFSS.RData")
 
 # Subset to a random set of 1000 rows to test creating the table
-test_rows = sample(1:nrow(BRFSS_merged),1000,replace = FALSE)
+test_rows = sample(1:nrow(BRFSS_merged),10000,replace = FALSE)
 test= BRFSS_merged[test_rows,]
+
+test$COV_YEAR = test$COV_YEAR %>% factor(levels = c(0,1),
+                                            labels = c("2017-2019","2020-2021"))
+
+test$HLTHPLN1 = test$HLTHPLN1 %>% factor(levels = c(1,2),
+                               labels = c("Coverage","No coverage"))
+
+test$MEDCOST = test$MEDCOST %>% factor(levels = c(1,2),
+                                         labels = c("Barrier","No barrier"))
+
+test$SEX = test$SEX %>% factor(levels = c(1,2),
+                                         labels = c("Male","Female"))
 
 # Create the survey design object
 design <- svydesign(data = test,
@@ -22,7 +34,9 @@ table_1 <-
   tbl_svysummary(
     by = COV_YEAR,
     include = c(MEDCOST,HLTHPLN1,SEX),
-    label=list(HLTHPLN1 ~ "Healthcare coverage", Sex ~ "Sex", MEDCOST ~ "Financial barrier to care"),
+    label=list(MEDCOST ~ "Financial barrier to care", HLTHPLN1 ~ "Healthcare coverage", SEX ~ "Sex",
+               COV_YEAR ~ "COVID-19 Year"),
     statistic = list(all_categorical() ~ "{n} ({p}%)"),
     missing="ifany",
     missing_text="Missing/Don't know/Refused" 
+  )
