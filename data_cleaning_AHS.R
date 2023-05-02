@@ -1,7 +1,7 @@
 ################################################################################
 # Script purpose: To load, clean, recode, reweight and merge BRFSS years 2017-21
 # Author: Austin Hammermeister Suger 
-# Last Updated: 4/27/2023
+# Last Updated: 5/2/2023
 # Required dependencies:
   # tidyverse
   # foreign
@@ -364,6 +364,8 @@ BRFSS_merged$HIVTST6[BRFSS_merged$HIVTST6 >2 ] <- NA
 rm(list=c("state_conversion","columns","variables","year_test",
           "add_state_name","year_proportions"))
 
+## Drop Puerto Rico and Guam ## 
+BRFSS_merged = BRFSS_merged %>% filter(state_name != "Guam" & state_name != "Puerto Rico")
 
 ## Final notes ##
 
