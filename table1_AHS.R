@@ -1,17 +1,37 @@
-setwd("C:/Users/Austin Hammermeister/Desktop/PhD/Year 1 Coursework/SPR_2023/EPI 514/Group Project/")
+################################################################################
+# Script purpose: To produce a table of survey weighted descriptive statistics
+# Author: Austin Hammermeister Suger 
+# Last Updated: 5/2/2023
+# Required dependencies:
+  # tidyverse
+  # foreign
+  # data.table
+  # gtsummary
+  # webshot2
+################################################################################
 
+## Clear the global environment ##
+rm(list=ls())
+
+## Load the required dependencies ## 
 library(data.table)
 library(survey)
 library(tidyverse)
 library(gtsummary)
 library(webshot2)
 
+## Set the working directory ## 
+setwd("C:/Users/Austin Hammermeister/Desktop/PhD/Year 1 Coursework/SPR_2023/EPI 514/Group Project/")
+
+## Load the cleaned data set ##
 load("clean_BRFSS.RData")
 
-# HIV BRFSS_merged within the BRFSS year #
+## Apply descriptive levels to the relevant variables ##
 
-BRFSS_merged$HIV_BRFSS_merged = BRFSS_merged$HIV_BRFSS_merged %>% factor(levels = c(0,1),
-                                         labels = c("No HIV BRFSS_merged within the BRFSS survey year", "HIV BRFSS_merged within the BRFSS survey year"))
+# HIV test within the BRFSS year #
+
+BRFSS_merged$HIV_test = BRFSS_merged$HIV_test %>% factor(levels = c(0,1),
+                                         labels = c("No HIV test within the BRFSS survey year", "HIV test within the BRFSS survey year"))
 
 # COVID-19 Year #
 
@@ -45,6 +65,22 @@ BRFSS_merged$X_RACE = BRFSS_merged$X_RACE %>% factor(levels = c(1,2,3,4,5,6,7,8)
                                           "Other race, non-Hispanic",
                                           "Multiracial, non-Hispanic",
                                           "Hispanic"))
+
+# Age group #
+
+# Collapse age groups #
+
+BRFSS_merged = BRFSS_merged %>% mutate(AGEG20YR = case_when(X_AGEG5YR<=3 ~ 1,
+                                                            X_AGEG5YR>3 & X_AGEG5YR<=7 ~ 2,
+                                                            X_AGEG5YR>7 & X_AGEG5YR<=11 ~ 3,
+                                                            X_AGEG5YR>11 ~ 4,))
+
+BRFSS_merged$AGEG20YR = BRFSS_merged$AGEG20YR %>% factor(levels = c(1,2,3,4),
+                                                       labels = c("18-34",
+                                                                  "35-54",
+                                                                  "55-74",
+                                                                  "75+"))
+
 
 # Urban/rural status #
 BRFSS_merged$X_URBSTAT = BRFSS_merged$X_URBSTAT %>% factor(levels = c(1,2),
@@ -104,24 +140,26 @@ BRFSS_merged$TRNSGNDR = BRFSS_merged$TRNSGNDR %>% factor(levels = c(1,2,3,4),
                              labels = c("Transgender, male-to-female",
                                         "Transgender, female-to-male",
                                         "Transgender, gender nonconforming",
-                                        "No"))
+                                        "Not transgender"))
 
 
-# Create the survey design object
+# Create the survey design object for the full data set
 design <- svydesign(data = BRFSS_merged,
                     id = ~X_PSU, strata = ~X_STSTR, weights = ~LLCPWT_5Y, nest = TRUE)
 options(survey.lonely.psu = "adjust")
 
-# Create a table_1
+
+# Create a table 1 for the full data set
 table_1 <-
   design %>%
   tbl_svysummary(
     by = COV_YEAR,
-    include = c(HIV_BRFSS_merged,HLTHPLN1,MEDCOST,SEX,X_RACE,X_URBSTAT,
+    include = c(HIV_test,HLTHPLN1,MEDCOST,SEX,AGEG20YR, X_RACE,X_URBSTAT,
                 EMPLOY1,INCOME2,RENTHOM1,X_EDUCAG,SO,TRNSGNDR),
-    label=list(HIV_BRFSS_merged~ "HIV BRFSS_merged within the BRFSS survey year", 
+    label=list(HIV_test~ "HIV test within the BRFSS survey year", 
                HLTHPLN1 ~ "Healthcare coverage",
                MEDCOST ~ "Financial barriers to healthcare",SEX ~ "Sex",
+               AGEG20YR ~ "Age group", 
                X_RACE ~ "Race/ethnicity", X_URBSTAT ~ "Urban/rural status",
                EMPLOY1 ~ "Employment status",
                INCOME2 ~ "Annual household income", RENTHOM1 ~ "Home ownership",
@@ -129,9 +167,9 @@ table_1 <-
                TRNSGNDR ~ "Transgender status"),
     statistic = list(all_categorical() ~ "{n} ({p}%) [{p_unweighted}%]"),
     missing="ifany",
-    missing_text="Missing/Don't know/Refused" 
+    missing_text="Missing/Don't know/Refused",
   ) %>%
-  modify_caption("<b>Table 1: BRFSS respondant characteristics prior to (2017-2019) and during the COVID-19 pandemic (2020-2021).</b>") %>% 
+  modify_caption("<b>Table 1: National BRFSS respondent characteristics prior to (2017-2019) and during the COVID-19 pandemic (2020-2021).</b>") %>% 
   bold_labels() %>%
   add_n() %>%
   as_gt() %>%
