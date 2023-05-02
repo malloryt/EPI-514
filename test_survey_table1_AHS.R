@@ -8,39 +8,35 @@ library(webshot2)
 
 load("clean_BRFSS.RData")
 
-# Subset to a random set of 10000 rows to test creating the table
-test_rows = sample(1:nrow(BRFSS_merged),10000,replace = FALSE)
-test= BRFSS_merged[test_rows,]
+# HIV BRFSS_merged within the BRFSS year #
 
-# HIV test within the BRFSS year #
-
-test$HIV_test = test$HIV_test %>% factor(levels = c(0,1),
-                                         labels = c("No HIV test within the BRFSS survey year", "HIV test within the BRFSS survey year"))
+BRFSS_merged$HIV_BRFSS_merged = BRFSS_merged$HIV_BRFSS_merged %>% factor(levels = c(0,1),
+                                         labels = c("No HIV BRFSS_merged within the BRFSS survey year", "HIV BRFSS_merged within the BRFSS survey year"))
 
 # COVID-19 Year #
 
-test$COV_YEAR = test$COV_YEAR %>% factor(levels = c(0,1),
+BRFSS_merged$COV_YEAR = BRFSS_merged$COV_YEAR %>% factor(levels = c(0,1),
                                             labels = c("2017-2019","2020-2021"))
 
 # Healthcare access #
 
 
-test$HLTHPLN1 = test$HLTHPLN1 %>% factor(levels = c(1,2),
+BRFSS_merged$HLTHPLN1 = BRFSS_merged$HLTHPLN1 %>% factor(levels = c(1,2),
                                labels = c("Coverage","No coverage"))
 
 # Financial barriers to care #
 
-test$MEDCOST = test$MEDCOST %>% factor(levels = c(1,2),
+BRFSS_merged$MEDCOST = BRFSS_merged$MEDCOST %>% factor(levels = c(1,2),
                                          labels = c("Barriers","No barriers"))
 
 # Sex #
 
-test$SEX = test$SEX %>% factor(levels = c(1,2),
+BRFSS_merged$SEX = BRFSS_merged$SEX %>% factor(levels = c(1,2),
                                          labels = c("Male","Female"))
 
 # Race/ethnicity #
 
-test$X_RACE = test$X_RACE %>% factor(levels = c(1,2,3,4,5,6,7,8),
+BRFSS_merged$X_RACE = BRFSS_merged$X_RACE %>% factor(levels = c(1,2,3,4,5,6,7,8),
                                labels = c("White, non-Hispanic",
                                           "Black, non-Hispanic",
                                           "American Indian or Alaskan Native, non-Hispanic",
@@ -51,12 +47,12 @@ test$X_RACE = test$X_RACE %>% factor(levels = c(1,2,3,4,5,6,7,8),
                                           "Hispanic"))
 
 # Urban/rural status #
-test$X_URBSTAT = test$X_URBSTAT %>% factor(levels = c(1,2),
+BRFSS_merged$X_URBSTAT = BRFSS_merged$X_URBSTAT %>% factor(levels = c(1,2),
                                        labels = c("Urban counties","Rural counties"))
 
 # Employment #
 
-test$EMPLOY1 = test$EMPLOY1 %>% factor(levels = c(1,2,3,4,5,6,7,8),
+BRFSS_merged$EMPLOY1 = BRFSS_merged$EMPLOY1 %>% factor(levels = c(1,2,3,4,5,6,7,8),
                                            labels = c("Employed for wages",
                                                       "Self-employed",
                                                       "Out of work (>=1 year)",
@@ -67,7 +63,7 @@ test$EMPLOY1 = test$EMPLOY1 %>% factor(levels = c(1,2,3,4,5,6,7,8),
                                                       "Unable to work"))
 # Annual household income #
 
-test$INCOME2 = test$INCOME2 %>% factor(levels = c(1,2,3,4,5,6,7,8),
+BRFSS_merged$INCOME2 = BRFSS_merged$INCOME2 %>% factor(levels = c(1,2,3,4,5,6,7,8),
                                        labels = c("<$10K",
                                                   "$10-15K",
                                                   "$15-20K",
@@ -78,12 +74,12 @@ test$INCOME2 = test$INCOME2 %>% factor(levels = c(1,2,3,4,5,6,7,8),
                                                   ">$75K"))
 
 # Home ownership #
-test$RENTHOM1 = test$RENTHOM1 %>% factor(levels = c(1,2,3),
+BRFSS_merged$RENTHOM1 = BRFSS_merged$RENTHOM1 %>% factor(levels = c(1,2,3),
                                            labels = c("Own","Rent",
                                                       "Other"))
 
 # Level of education #
-test$X_EDUCAG = test$X_EDUCAG %>% factor(levels = c(1,2,3,4),
+BRFSS_merged$X_EDUCAG = BRFSS_merged$X_EDUCAG %>% factor(levels = c(1,2,3,4),
                                          labels = c("Less than high school","High school",
                                                     "Some college or technical school",
                                                     "College or technical school"))
@@ -91,12 +87,12 @@ test$X_EDUCAG = test$X_EDUCAG %>% factor(levels = c(1,2,3,4),
 # Sexual orientation #
 
 # Create a single sexual orientation variable 
-test = test %>% mutate(SO = case_when(SOMALE==1 | SOFEMALE==1 ~ 1,
+BRFSS_merged = BRFSS_merged %>% mutate(SO = case_when(SOMALE==1 | SOFEMALE==1 ~ 1,
                                       SOMALE==2 | SOFEMALE==2 ~ 2,
                                       SOMALE==3 | SOFEMALE==3 ~ 3,
                                       SOMALE==4 | SOFEMALE==4 ~ 4))
 
-test$SO = test$SO %>% factor(levels = c(1,2,3,4),
+BRFSS_merged$SO = BRFSS_merged$SO %>% factor(levels = c(1,2,3,4),
                                          labels = c("Gay or Lesbian",
                                                     "Straight",
                                                     "Bisexual",
@@ -104,7 +100,7 @@ test$SO = test$SO %>% factor(levels = c(1,2,3,4),
 
 # Transgender status #
 
-test$TRNSGNDR = test$TRNSGNDR %>% factor(levels = c(1,2,3,4),
+BRFSS_merged$TRNSGNDR = BRFSS_merged$TRNSGNDR %>% factor(levels = c(1,2,3,4),
                              labels = c("Transgender, male-to-female",
                                         "Transgender, female-to-male",
                                         "Transgender, gender nonconforming",
@@ -112,7 +108,7 @@ test$TRNSGNDR = test$TRNSGNDR %>% factor(levels = c(1,2,3,4),
 
 
 # Create the survey design object
-design <- svydesign(data = test,
+design <- svydesign(data = BRFSS_merged,
                     id = ~X_PSU, strata = ~X_STSTR, weights = ~LLCPWT_5Y, nest = TRUE)
 options(survey.lonely.psu = "adjust")
 
@@ -121,17 +117,17 @@ table_1 <-
   design %>%
   tbl_svysummary(
     by = COV_YEAR,
-    include = c(HIV_test,HLTHPLN1,MEDCOST,SEX,X_RACE,X_URBSTAT,
+    include = c(HIV_BRFSS_merged,HLTHPLN1,MEDCOST,SEX,X_RACE,X_URBSTAT,
                 EMPLOY1,INCOME2,RENTHOM1,X_EDUCAG,SO,TRNSGNDR),
-    label=list(HIV_test~ "HIV test within the BRFSS survey year", 
+    label=list(HIV_BRFSS_merged~ "HIV BRFSS_merged within the BRFSS survey year", 
                HLTHPLN1 ~ "Healthcare coverage",
-               MEDCOST ~ "Financial barriers to care",SEX ~ "Sex",
-               X_RACE ~ "Race/Ethnicity", X_URBSTAT ~ "Urban/rural status",
+               MEDCOST ~ "Financial barriers to healthcare",SEX ~ "Sex",
+               X_RACE ~ "Race/ethnicity", X_URBSTAT ~ "Urban/rural status",
                EMPLOY1 ~ "Employment status",
                INCOME2 ~ "Annual household income", RENTHOM1 ~ "Home ownership",
                X_EDUCAG ~ "Level of education", SO ~ "Sexual orientation",
                TRNSGNDR ~ "Transgender status"),
-    statistic = list(all_categorical() ~ "{n} ({p}%) [{n_unweighted} ({p_unweighted}]"),
+    statistic = list(all_categorical() ~ "{n} ({p}%) [{p_unweighted}%]"),
     missing="ifany",
     missing_text="Missing/Don't know/Refused" 
   ) %>%
@@ -141,5 +137,5 @@ table_1 <-
   as_gt() %>%
   gt::tab_source_note(gt::md("*Rural/urban status was not collected in 2017; Sexual orientation and transgender questions are only asked by a subset of states each year*"))
 
-gt::gtsave(table_1, file = "example_table1.png")
-
+# Export .png
+gt::gtsave(table_1, file = "group24_table1.png")
