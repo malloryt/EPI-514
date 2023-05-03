@@ -1,7 +1,7 @@
 ################################################################################
 # Script purpose: To load, clean, recode, reweight and merge BRFSS years 2017-21
 # Author: Austin Hammermeister Suger 
-# Last Updated: 5/2/2023
+# Last Updated: 5/3/2023
 # Required dependencies:
   # tidyverse
   # foreign
@@ -38,12 +38,12 @@ subset_2017$X_URBSTAT = NA
 subset_2017$BIRTHSEX = NA
 
 # Split the sexual orientation variable into sex-specific variables #
-subset_2017 = subset_2017 %>% mutate(SOMALE = case_when(SXORIENT==1 & SEX==1 ~ 1,
-                                                        SXORIENT==2 & SEX==1 ~ 2,
+subset_2017 = subset_2017 %>% mutate(SOMALE = case_when(SXORIENT==1 & SEX==1 ~ 2,
+                                                        SXORIENT==2 & SEX==1 ~ 1,
                                                         SXORIENT==3 & SEX==1 ~ 3,
                                                         SXORIENT==4 & SEX==1 ~ 4),
-                                     SOFEMALE = case_when(SXORIENT==1 & SEX==2 ~ 1,
-                                                        SXORIENT==2 & SEX==2 ~ 2,
+                                     SOFEMALE = case_when(SXORIENT==1 & SEX==2 ~ 2,
+                                                        SXORIENT==2 & SEX==2 ~ 1,
                                                         SXORIENT==3 & SEX==2 ~ 3,
                                                         SXORIENT==4 & SEX==2 ~ 4))
 # Remove the single sexual orientation variable #
