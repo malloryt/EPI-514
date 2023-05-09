@@ -1,180 +1,389 @@
 ################################################################################
-# Script purpose: To produce a table of survey weighted descriptive statistics
+# Script purpose: To load, clean, recode, reweight and merge BRFSS years 2017-21
 # Author: Austin Hammermeister Suger 
 # Last Updated: 5/3/2023
 # Required dependencies:
   # tidyverse
   # foreign
   # data.table
-  # gtsummary
-  # webshot2
 ################################################################################
 
 ## Clear the global environment ##
 rm(list=ls())
 
 ## Load the required dependencies ## 
-library(data.table)
-library(survey)
 library(tidyverse)
-library(gtsummary)
-library(webshot2)
+library(foreign)
+library(data.table)
 
 ## Set the working directory ## 
 setwd("C:/Users/Austin Hammermeister/Desktop/PhD/Year 1 Coursework/SPR_2023/EPI 514/Group Project/")
 
-## Load the cleaned data set ##
-load("clean_BRFSS.RData")
+## BRFSS Year 2017 ##
 
-## Apply descriptive levels to the relevant variables ##
+# Load SAS transport files #
+BRFSS_2017 = read.xport("LLCP2017.XPT") 
 
-# HIV test within the BRFSS year #
+# Subset to relevant variables #
+variables = c("X_STATE","FMONTH","IDATE","IYEAR","DISPCODE","SEQNO","X_PSU",
+              "X_LLCPWT","X_STSTR","X_AGEG5YR","SEX","X_RACE","EMPLOY1","INCOME2",
+              "RENTHOM1","X_EDUCAG","SXORIENT","TRNSGNDR","MEDCOST","HLTHPLN1",
+              "HIVTST6","HIVTSTD3")
+subset_2017 = BRFSS_2017 %>% select(variables)
 
-BRFSS_merged$HIV_test = BRFSS_merged$HIV_test %>% factor(levels = c(0,1),
-                                         labels = c("No HIV test within the BRFSS survey year", "HIV test within the BRFSS survey year"))
+# Add an empty urban status variable for merging #
+subset_2017$X_URBSTAT = NA
 
-# COVID-19 Year #
+# Add an empty BIRTHSEX variable for merging #
+subset_2017$BIRTHSEX = NA
 
-BRFSS_merged$COV_YEAR = BRFSS_merged$COV_YEAR %>% factor(levels = c(0,1),
-                                            labels = c("2017-2019","2020-2021"))
+# Split the sexual orientation variable into sex-specific variables #
+subset_2017 = subset_2017 %>% mutate(SOMALE = case_when(SXORIENT==1 & SEX==1 ~ 2,
+                                                        SXORIENT==2 & SEX==1 ~ 1,
+                                                        SXORIENT==3 & SEX==1 ~ 3,
+                                                        SXORIENT==4 & SEX==1 ~ 4),
+                                     SOFEMALE = case_when(SXORIENT==1 & SEX==2 ~ 2,
+                                                        SXORIENT==2 & SEX==2 ~ 1,
+                                                        SXORIENT==3 & SEX==2 ~ 3,
+                                                        SXORIENT==4 & SEX==2 ~ 4))
+# Remove the single sexual orientation variable #
+subset_2017 = subset_2017 %>% select(-SXORIENT)
 
-# Healthcare access #
+# Add a BRFSS year variable #
+subset_2017$BRFSS_YEAR = 2017
 
 
-BRFSS_merged$HLTHPLN1 = BRFSS_merged$HLTHPLN1 %>% factor(levels = c(1,2),
-                               labels = c("Coverage","No coverage"))
+# Define a common column order #
+columns = c("X_STATE","FMONTH","IDATE","IYEAR","DISPCODE","SEQNO","X_PSU",
+            "X_LLCPWT","X_STSTR","X_AGEG5YR","SEX","X_RACE","EMPLOY1",
+            "INCOME2","RENTHOM1","X_EDUCAG","X_URBSTAT","SOMALE","SOFEMALE",
+            "BIRTHSEX","TRNSGNDR","MEDCOST","HLTHPLN1","HIVTST6","HIVTSTD3",
+            "BRFSS_YEAR")
 
-# Financial barriers to care #
+subset_2017 = subset_2017[,columns]
 
-BRFSS_merged$MEDCOST = BRFSS_merged$MEDCOST %>% factor(levels = c(1,2),
-                                         labels = c("Barriers","No barriers"))
+# Remove the full 2017 data set from memory #
+rm(BRFSS_2017)
+
+
+
+## BRFSS Year 2018 ##
+
+# Load SAS transport files #
+BRFSS_2018 = read.xport("LLCP2018.XPT") 
+
+# Subset to relevant variables #
+variables = c("X_STATE","FMONTH","IDATE","IYEAR","DISPCODE","SEQNO","X_PSU",
+                   "X_LLCPWT","X_STSTR","X_AGEG5YR","SEX1","X_RACE","EMPLOY1",
+              "INCOME2","RENTHOM1","X_EDUCAG","X_URBSTAT","SOMALE","SOFEMALE",
+              "TRNSGNDR","MEDCOST","HLTHPLN1","HIVTST6","HIVTSTD3")
+subset_2018 = BRFSS_2018 %>% select(variables)
+
+# Add an empty BIRTHSEX variable for merging #
+subset_2018$BIRTHSEX = NA
+
+# Rename the sex variable #
+names(subset_2018)[names(subset_2018) == 'SEX1'] <- 'SEX'
+
+# Add a BRFSS year variable #
+subset_2018$BRFSS_YEAR = 2018
+
+
+# Define a common column order #
+columns = c("X_STATE","FMONTH","IDATE","IYEAR","DISPCODE","SEQNO","X_PSU",
+            "X_LLCPWT","X_STSTR","X_AGEG5YR","SEX","X_RACE","EMPLOY1",
+            "INCOME2","RENTHOM1","X_EDUCAG","X_URBSTAT","SOMALE","SOFEMALE",
+            "BIRTHSEX","TRNSGNDR","MEDCOST","HLTHPLN1","HIVTST6","HIVTSTD3",
+            "BRFSS_YEAR")
+
+subset_2018 = subset_2018[,columns]
+
+# Remove the full 2018 data set from memory #
+rm(BRFSS_2018)
+
+
+
+## BRFSS Year 2019 ##
+
+# Load SAS transport files #
+BRFSS_2019 = read.xport("LLCP2019.XPT") 
+
+# Subset to relevant variables #
+variables = c("X_STATE","FMONTH","IDATE","IYEAR","DISPCODE","SEQNO","X_PSU",
+              "X_LLCPWT","X_STSTR","X_AGEG5YR","SEXVAR","X_RACE","EMPLOY1",
+              "INCOME2","RENTHOM1","X_EDUCAG","X_URBSTAT","SOMALE","SOFEMALE",
+              "BIRTHSEX","TRNSGNDR","MEDCOST","HLTHPLN1","HIVTST7","HIVTSTD3")
+subset_2019 = BRFSS_2019 %>% select(variables)
+
+# Rename the sex variable #
+names(subset_2019)[names(subset_2019) == 'SEXVAR'] <- 'SEX'
+
+# Rename the HIV test indicator variable #
+names(subset_2019)[names(subset_2019) == 'HIVTST7'] <- 'HIVTST6'
+
+# Add a BRFSS year variable #
+subset_2019$BRFSS_YEAR = 2019
+
+# Define a common column order #
+columns = c("X_STATE","FMONTH","IDATE","IYEAR","DISPCODE","SEQNO","X_PSU",
+            "X_LLCPWT","X_STSTR","X_AGEG5YR","SEX","X_RACE","EMPLOY1",
+            "INCOME2","RENTHOM1","X_EDUCAG","X_URBSTAT","SOMALE","SOFEMALE",
+            "BIRTHSEX","TRNSGNDR","MEDCOST","HLTHPLN1","HIVTST6","HIVTSTD3",
+            "BRFSS_YEAR")
+
+subset_2019 = subset_2019[,columns]
+
+# Remove the full 2019 data set from memory #
+rm(BRFSS_2019)
+
+
+
+
+## BRFSS Year 2020 ##
+
+# Load SAS transport files #
+BRFSS_2020 = read.xport("LLCP2020.XPT") 
+
+# Subset to relevant variables #
+variables = c("X_STATE","FMONTH","IDATE","IYEAR","DISPCODE","SEQNO","X_PSU",
+              "X_LLCPWT","X_STSTR","X_AGEG5YR","SEXVAR","X_RACE","EMPLOY1",
+              "INCOME2","RENTHOM1","X_EDUCAG","X_URBSTAT","SOMALE","SOFEMALE",
+              "BIRTHSEX", "TRNSGNDR","MEDCOST","HLTHPLN1","HIVTST7","HIVTSTD3")
+subset_2020 = BRFSS_2020 %>% select(variables)
+
+# Rename the sex variable #
+names(subset_2020)[names(subset_2020) == 'SEXVAR'] <- 'SEX'
+
+
+# Rename the HIV test indicator variable #
+names(subset_2020)[names(subset_2020) == 'HIVTST7'] <- 'HIVTST6'
+
+
+# Add a BRFSS year variable #
+subset_2020$BRFSS_YEAR = 2020
+
+
+# Define a common column order #
+columns = c("X_STATE","FMONTH","IDATE","IYEAR","DISPCODE","SEQNO","X_PSU",
+            "X_LLCPWT","X_STSTR","X_AGEG5YR","SEX","X_RACE","EMPLOY1",
+            "INCOME2","RENTHOM1","X_EDUCAG","X_URBSTAT","SOMALE","SOFEMALE",
+            "BIRTHSEX","TRNSGNDR","MEDCOST","HLTHPLN1","HIVTST6","HIVTSTD3",
+            "BRFSS_YEAR")
+
+subset_2020 = subset_2020[,columns]
+
+# Remove the full 2020 data set from memory #
+rm(BRFSS_2020)
+
+
+
+
+## BRFSS Year 2021 ##
+
+# Load SAS transport files #
+BRFSS_2021 = read.xport("LLCP2021.XPT") 
+
+# Subset to relevant variables #
+variables = c("X_STATE","FMONTH","IDATE","IYEAR","DISPCODE","SEQNO","X_PSU",
+              "X_LLCPWT","X_STSTR","X_AGEG5YR","SEXVAR","X_RACE","EMPLOY1",
+              "INCOME3","RENTHOM1","X_EDUCAG","X_URBSTAT","SOMALE","SOFEMALE",
+              "TRNSGNDR","BIRTHSEX","MEDCOST1","X_HLTHPLN","HIVTST7","HIVTSTD3")
+subset_2021 = BRFSS_2021 %>% select(variables)
+
+# Recode INCOME3 to be equivalent to INCOME2 used by prior years #
+subset_2021 = subset_2021 %>% mutate(INCOME2 = case_when(INCOME3 %in% c(8,9,10,11) ~ 8,
+                                                         INCOME3 == 7 ~ 7,
+                                                         INCOME3 == 6 ~ 6,
+                                                         INCOME3 == 5 ~ 5,
+                                                         INCOME3 == 4 ~ 4,
+                                                         INCOME3 == 3 ~ 3,
+                                                         INCOME3 == 2 ~ 2,
+                                                         INCOME3 == 1 ~ 1,))
+# Rename the health coverage variable #
+names(subset_2021)[names(subset_2021) == 'MEDCOST1'] <- 'MEDCOST'
+
+# Rename the health coverage variable #
+names(subset_2021)[names(subset_2021) == 'X_HLTHPLN'] <- 'HLTHPLN1'
+
+# Rename the sex variable #
+names(subset_2021)[names(subset_2021) == 'SEXVAR'] <- 'SEX'
+
+# Rename the HIV test indicator variable #
+names(subset_2021)[names(subset_2021) == 'HIVTST7'] <- 'HIVTST6'
+
+
+# Add a BRFSS year variable #
+subset_2021$BRFSS_YEAR = 2021
+
+# Define a common column order #
+columns = c("X_STATE","FMONTH","IDATE","IYEAR","DISPCODE","SEQNO","X_PSU",
+            "X_LLCPWT","X_STSTR","X_AGEG5YR","SEX","X_RACE","EMPLOY1",
+            "INCOME2","RENTHOM1","X_EDUCAG","X_URBSTAT","SOMALE","SOFEMALE",
+            "BIRTHSEX","TRNSGNDR","MEDCOST","HLTHPLN1","HIVTST6","HIVTSTD3",
+            "BRFSS_YEAR")
+
+subset_2021 = subset_2021[,columns]
+
+# Remove the full 2021 data set from memory #
+rm(BRFSS_2021)
+
+
+## Append the BRFSS years ##
+BRFSS_merged = rbindlist(list(subset_2017,subset_2018,subset_2019,subset_2020,
+                              subset_2021))
+
+
+
+## State number to name conversion ##
+state_conversion = data.frame(X_STATE = c(1,2,4,5,6,8,9,10,11,12,13,15,16,17,18,
+                                          19,20,21,22,23,24,25,26,27,28,29,30,
+                                          31,32,33,34,35,36,37,38,39,40,41,42,
+                                          44,45,46,47,48,49,50,51,53,54,55,56,
+                                          66,72),
+                              state_name = c("Alabama","Alaska","Arizona","Arkansas",
+                                             "California","Colorado","Connecticut",
+                                             "Delaware","District of Columbia",
+                                             "Florida","Georgia","Hawaii","Idaho",
+                                             "Illinois","Indiana","Iowa","Kansas",
+                                             "Kentucky","Louisiana","Maine","Maryland",
+                                             "Massachusetts","Michigan","Minnesota",
+                                             "Mississippi","Missouri","Montana",
+                                             "Nebraska","Nevada","New Hampshire",
+                                             "New Jersey","New Mexico","New York",
+                                             "North Carolina","North Dakota","Ohio",
+                                             "Oklahoma","Oregon","Pennsylvania",
+                                             "Rhode Island","South Carolina",
+                                             "South Dakota","Tennessee","Texas",
+                                             "Utah","Vermont","Virginia","Washington",
+                                             "West Virginia","Wisconsin","Wyoming",
+                                             "Guam","Puerto Rico"))
+
+add_state_name = function(X) {
+  X=merge(X,state_conversion,by="X_STATE")
+  return(X)
+}
+
+BRFSS_merged = add_state_name(BRFSS_merged)
+
+## Define HIV testing within the BRFSS year variable ##
+
+# Creates a variable for HIV testing within the BRFSS year among individuals who received a test #
+  # 1 indicates that the last HIV test date year matches the BRFSS year
+  # 0 indicates that the last HIV test date year does not match the BRFSS year
+year_test = ifelse(BRFSS_merged$BRFSS_YEAR %>% as.character() == 
+                     str_sub(BRFSS_merged$HIVTSTD3,-4),1,0)
+
+# Creates a variable for HIV testing within the BRFSS year among all individuals #
+  # 1 indicates that the last HIV test date year matches the BRFSS year
+  # 0 indicates that an individual did not receive an HIV test or recieved an HIV test but not within that year
+BRFSS_merged = BRFSS_merged %>% mutate(HIV_test = case_when(HIVTST6==1 & year_test == 1 ~ 1,
+                                                            HIVTST6==2 | year_test == 0 ~ 0))
+
+## Define a COVID-19 indicator variable ##
+BRFSS_merged$COV_YEAR = ifelse(BRFSS_merged$BRFSS_YEAR >2019,1,0)
+
+
+## Create new weight variables for the merged data set ##
+
+# Reweight responses by year #
+
+year_proportions = BRFSS_merged %>% group_by(BRFSS_YEAR) %>% 
+    summarise(prop = n()/nrow(BRFSS_merged)) %>% select(prop) %>% 
+  unlist() %>% as.numeric()
+
+BRFSS_merged = BRFSS_merged %>%
+  mutate(LLCPWT_5Y = case_when(BRFSS_YEAR==2017 ~ X_LLCPWT*year_proportions[1],
+                               BRFSS_YEAR==2018 ~ X_LLCPWT*year_proportions[2],
+                               BRFSS_YEAR==2019 ~ X_LLCPWT*year_proportions[3],
+                               BRFSS_YEAR==2020 ~ X_LLCPWT*year_proportions[4],
+                               BRFSS_YEAR==2021 ~ X_LLCPWT*year_proportions[5],))
+
+
+## Recode BRFSS missing/don't know to NA ##
+
+# 5 year age group #
+  # 14 indicates Don't know/Refused/Missing
+BRFSS_merged$X_AGEG5YR[BRFSS_merged$X_AGEG5YR == 14] <- NA
 
 # Sex #
+  # Values above 2 indicate Don't know/Refused/Missing
+BRFSS_merged$SEX[BRFSS_merged$SEX >2 ] <- NA
 
-BRFSS_merged$SEX = BRFSS_merged$SEX %>% factor(levels = c(1,2),
-                                         labels = c("Male","Female"))
+# Race/Ethnicity grouping #
+  # 9 indicates Don't know/Refused/Missing
+BRFSS_merged$X_RACE[BRFSS_merged$X_RACE == 9 ] <- NA
 
-# Race/ethnicity #
+# Employment status #
+  # 9 indicates Don't know/Refused/Missing
+BRFSS_merged$EMPLOY1[BRFSS_merged$EMPLOY1 == 9 ] <- NA
 
-BRFSS_merged$X_RACE = BRFSS_merged$X_RACE %>% factor(levels = c(1,2,3,4,5,6,7,8),
-                               labels = c("White, non-Hispanic",
-                                          "Black, non-Hispanic",
-                                          "American Indian or Alaskan Native, non-Hispanic",
-                                          "Asian, non-Hispanic",
-                                          "Native Hawaiian or other Pacific Islander, non-Hispanic",
-                                          "Other race, non-Hispanic",
-                                          "Multiracial, non-Hispanic",
-                                          "Hispanic"))
-
-# Age group #
-
-# Collapse age groups #
-
-BRFSS_merged = BRFSS_merged %>% mutate(AGEG20YR = case_when(X_AGEG5YR<=3 ~ 1,
-                                                            X_AGEG5YR>3 & X_AGEG5YR<=7 ~ 2,
-                                                            X_AGEG5YR>7 & X_AGEG5YR<=11 ~ 3,
-                                                            X_AGEG5YR>11 ~ 4,))
-
-BRFSS_merged$AGEG20YR = BRFSS_merged$AGEG20YR %>% factor(levels = c(1,2,3,4),
-                                                       labels = c("18-34",
-                                                                  "35-54",
-                                                                  "55-74",
-                                                                  "75+"))
-
-
-# Urban/rural status #
-BRFSS_merged$X_URBSTAT = BRFSS_merged$X_URBSTAT %>% factor(levels = c(1,2),
-                                       labels = c("Urban counties","Rural counties"))
-
-# Employment #
-
-BRFSS_merged$EMPLOY1 = BRFSS_merged$EMPLOY1 %>% factor(levels = c(1,2,3,4,5,6,7,8),
-                                           labels = c("Employed for wages",
-                                                      "Self-employed",
-                                                      "Out of work (>=1 year)",
-                                                      "Out of work (<1 year)",
-                                                      "A homemaker",
-                                                      "A student",
-                                                      "Retired",
-                                                      "Unable to work"))
-# Annual household income #
-
-BRFSS_merged$INCOME2 = BRFSS_merged$INCOME2 %>% factor(levels = c(1,2,3,4,5,6,7,8),
-                                       labels = c("<$10K",
-                                                  "$10-15K",
-                                                  "$15-20K",
-                                                  "$20-25K",
-                                                  "$25-35K",
-                                                  "$35-50K",
-                                                  "$50-75K",
-                                                  ">$75K"))
+# Income #
+  # Values greater than 8 indicate Don't know/Refused/Missing
+BRFSS_merged$INCOME2[BRFSS_merged$INCOME2 >8 ] <- NA
 
 # Home ownership #
-BRFSS_merged$RENTHOM1 = BRFSS_merged$RENTHOM1 %>% factor(levels = c(1,2,3),
-                                           labels = c("Own","Rent",
-                                                      "Other"))
+  # Values greater than 8 indicate Don't know/Refused/Missing
+BRFSS_merged$RENTHOM1[BRFSS_merged$RENTHOM1 >3 ] <- NA
 
-# Level of education #
-BRFSS_merged$X_EDUCAG = BRFSS_merged$X_EDUCAG %>% factor(levels = c(1,2,3,4),
-                                         labels = c("Less than high school","High school",
-                                                    "Some college or technical school",
-                                                    "College or technical school"))
+# Education #
+  # 9 indicates Don't know/Refused/Missing
+BRFSS_merged$X_EDUCAG[BRFSS_merged$X_EDUCAG == 9 ] <- NA
 
-# Sexual orientation #
+# Urban/Rural status #
+  # Missingness already encoded
 
-# Create a single sexual orientation variable 
-BRFSS_merged = BRFSS_merged %>% mutate(SO = case_when(SOMALE==1 | SOFEMALE==1 ~ 1,
-                                      SOMALE==2 | SOFEMALE==2 ~ 2,
-                                      SOMALE==3 | SOFEMALE==3 ~ 3,
-                                      SOMALE==4 | SOFEMALE==4 ~ 4))
+# Male sexual orientation #
+  # Values greater than 4 indicate Don't know/Refused/Missing
+BRFSS_merged$SOMALE[BRFSS_merged$SOMALE >4 ] <- NA
 
-BRFSS_merged$SO = BRFSS_merged$SO %>% factor(levels = c(1,2,3,4),
-                                         labels = c("Gay or Lesbian",
-                                                    "Straight",
-                                                    "Bisexual",
-                                                    "Something else"))
+# Female sexual orientation #
+  # Values greater than 4 indicate Don't know/Refused/Missing
+BRFSS_merged$SOFEMALE[BRFSS_merged$SOFEMALE >4 ] <- NA
 
-# Transgender status #
+# Birth sex #
+  # Values greater than 2 indicate Don't know/Refused/Missing
+BRFSS_merged$BIRTHSEX[BRFSS_merged$BIRTHSEX >2 ] <- NA
 
-BRFSS_merged$TRNSGNDR = BRFSS_merged$TRNSGNDR %>% factor(levels = c(1,2,3,4),
-                             labels = c("Transgender, male-to-female",
-                                        "Transgender, female-to-male",
-                                        "Transgender, gender nonconforming",
-                                        "Not transgender"))
+# Transgender #
+  # Values greater than 4 indicate Don't know/Refused/Missing
+BRFSS_merged$TRNSGNDR[BRFSS_merged$TRNSGNDR >4 ] <- NA
 
-# Create the survey design object for the full data set
-design <- svydesign(data = BRFSS_merged,
-                    id = ~X_PSU, strata = ~X_STSTR, weights = ~LLCPWT_5Y, nest = TRUE)
-options(survey.lonely.psu = "adjust")
+# Medical cost barriers #
+  # Values greater than 2 indicate Don't know/Refused/Missing
+BRFSS_merged$MEDCOST[BRFSS_merged$MEDCOST >2 ] <- NA
 
+# Health coverage #
+  # Values greater than 2 indicate Don't know/Refused/Missing
+BRFSS_merged$HLTHPLN1[BRFSS_merged$HLTHPLN1 >2 ] <- NA
 
-# Create a table 1 for the full data set
-table_1 <- design %>%
-  tbl_svysummary(
-    by = COV_YEAR,
-    include = c(HIV_test,HLTHPLN1,MEDCOST,SEX,AGEG20YR, X_RACE,X_URBSTAT,
-                EMPLOY1,INCOME2,RENTHOM1,X_EDUCAG,SO,TRNSGNDR),
-    label=list(HIV_test~ "HIV test within the BRFSS survey year", 
-               HLTHPLN1 ~ "Healthcare coverage",
-               MEDCOST ~ "Financial barriers to healthcare",SEX ~ "Sex",
-               AGEG20YR ~ "Age group", 
-               X_RACE ~ "Race/ethnicity", X_URBSTAT ~ "Urban/rural status",
-               EMPLOY1 ~ "Employment status",
-               INCOME2 ~ "Annual household income", RENTHOM1 ~ "Home ownership",
-               X_EDUCAG ~ "Level of education", SO ~ "Sexual orientation",
-               TRNSGNDR ~ "Transgender status"),
-    statistic = list(all_categorical() ~ "{n} ({p}%) [{p_unweighted}%]"),
-    missing="ifany",
-    missing_text="Missing/Don't know/Refused",
-    digits = everything() ~ 1
-  ) %>%
-  modify_caption("<b>Table 1: National BRFSS respondent characteristics prior to (2017-2019) and during the COVID-19 pandemic (2020-2021).</b>") %>% 
-  bold_labels() %>%
-  add_n() %>%
-  as_gt() %>% 
-  gt::tab_source_note(gt::md("*Rural/urban status was not collected in 2017; Sexual orientation and transgender questions are only asked by a subset of states each year*"))
+# Ever HIV test #
+  # Values greater than 2 indicate Don't know/Refused/Missing
+BRFSS_merged$HIVTST6[BRFSS_merged$HIVTST6 >2 ] <- NA
 
-# Export .png
-gt::gtsave(table_1, file = "group24_table1.png")
+# Clean environment #
+rm(list=c("state_conversion","columns","variables","year_test",
+          "add_state_name","year_proportions"))
+
+## Drop Puerto Rico and Guam ## 
+BRFSS_merged = BRFSS_merged %>% filter(state_name != "Guam" & state_name != "Puerto Rico")
+
+## Final notes ##
+
+# The last 5 variables in the data set were added #
+  # BRFSS_YEAR is the BRFSS survey year
+  # state_name is the name of the U.S. State or territory
+  # HIV test indicates whether an individual revived an HIV test within the BRFSS year
+  # COV_YEAR indicates whether the survey response occurred during 2020-2021
+  # state_year_LLCPWT are combined weights that have been reweighed by state and year
+
+# The BRFSS_final_merged data.frame is the final cleaned/merged/reweighed/recoded data set #
+# The subset_XXXX data.frames are the relevant variables directly from each BRFSS year #
+
+## Save the environment ##
+save.image("clean_BRFSS.RData", compress = "bzip2")
+
+# To load the environmental variables into an R session you would use load() #
+  # Requires ~ 5 Gb of memory
+#load("clean_BRFSS.RData")
 
 
