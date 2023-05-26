@@ -1,7 +1,7 @@
 ################################################################################
 # Script purpose: To produce figures for key results to show in presentation
 # Author: Austin Hammermeister Suger 
-# Last Updated: 5/25/2023
+# Last Updated: 5/26/2023
 # Required dependencies:
 # tidyverse
 ################################################################################
@@ -9,17 +9,16 @@
 library(tidyverse)
 setwd("C:/Users/Austin Hammermeister/Desktop/PhD/Year 1 Coursework/SPR_2023/EPI 514/Group Project")
 
-tab2_data = data.frame(PR = c(1.81,1.78,1.78,1.79,1.35,1.34,1.42,1.15),
-                       PR_lower = c(1.77,1.75,1.74,1.73,1.32,1.31,1.37,1.10),
-                       PR_upper = c(1.84,1.82,1.82,1.86,1.38,1.37,1.46,1.21),
-                       exposure = c(rep("Financial barrier to healthcare access",4),
-                                    rep("Lack of healthcare coverage",4)),
-                       PR_type = rep(c("crude","COVID-19 period MH adjusted","pre-COVID-19 period (2017-2019)",
-                                   "COVID-19 period (2020-2021)"),2),
-                       PR_stratum = c(rep("N",2),rep("Y",2),rep("N",2),rep("Y",2)))
+tab2_data = data.frame(PR = c(0.9,0.892,0.901,0.64,0.670,0.555),
+                       PR_lower = c(0.86,0.852,0.829,0.60,0.631,0.5),
+                       PR_upper = c(0.93,0.935,0.978,0.67,0.711,0.616),
+                       exposure = c(rep("Financial barrier to healthcare access",3),
+                                    rep("Lack of healthcare coverage",3)),
+                       PR_type = rep(c("All years (2017-2021)","pre-COVID-19 period (2017-2019)",
+                                   "COVID-19 period (2020-2021)"),2))
 tab2_data$PR_type = factor(tab2_data$PR_type, 
-                              levels = c("crude","COVID-19 period MH adjusted","pre-COVID-19 period (2017-2019)",
-                                           "COVID-19 period (2020-2021)"))
+                              levels = c("pre-COVID-19 period (2017-2019)","COVID-19 period (2020-2021)",
+                                           "All years (2017-2021)"))
 
 ## Exposure 
 p1=ggplot(data=tab2_data, aes(y=exposure,x=PR,color=PR_type))+
@@ -27,10 +26,10 @@ p1=ggplot(data=tab2_data, aes(y=exposure,x=PR,color=PR_type))+
                 position=position_dodge(width=0.4), stat="identity")+
   geom_point(aes(color=PR_type),size=3, 
              position=position_dodge(width=0.4), stat="identity")+
-  scale_color_manual(values=c("black","purple","blue","red","green","orange"),
-                     guide_legend(title = "estimate type"))+
-  scale_x_continuous(trans = "log",limits = c(0.98,1.9),
-                     breaks = c(1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9))+
+  scale_color_manual(values=c("purple","blue","red"),
+                     guide_legend(title = "period"))+
+  scale_x_continuous(trans = "log",limits = c(0.4,1.1),
+                     breaks = seq(0.4,1.1,by=0.1))+
   geom_vline(xintercept=1.0,linetype=2)+
   ylab("Exposure")+
   xlab("prevalence ratio")+
@@ -42,12 +41,12 @@ p1=ggplot(data=tab2_data, aes(y=exposure,x=PR,color=PR_type))+
 
 p2=ggplot(data = tab2_data, aes(x=PR_type,y=PR))+
   geom_errorbar(aes(ymin=PR_lower, ymax=PR_upper),width=0.25)+
-  geom_point(aes(color=PR_type),size=4)+
-  scale_color_manual(values=c("black","purple","blue","red"),
-                     guide_legend(title = "estimate type"))+
+  geom_point(aes(color=PR_type),size=3)+
+  scale_color_manual(values=c("purple","blue","red"),
+                     guide_legend(title = "period"))+
   facet_grid(~exposure)+
-  scale_y_continuous(trans = "log",limits = c(0.98,1.9),
-                     breaks = c(1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9))+
+  scale_y_continuous(trans = "log",limits = c(0.4,1.1),
+                     breaks = seq(0.4,1.1,by=0.1))+
   geom_hline(yintercept=1.0,linetype=2)+
   ylab("prevalence ratio")+
   theme_bw()+
@@ -57,6 +56,6 @@ p2=ggplot(data = tab2_data, aes(x=PR_type,y=PR))+
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank())
 
-ggsave("fig1_nofacet.jpeg",dpi=500,plot=p1,height = 4, width = 10)
+ggsave("fig1_nofacet.jpeg",dpi=500,plot=p1,height = 6, width = 10)
 ggsave("fig1_exposurefacet.jpeg",dpi=500,plot=p2,height = 8, width = 8)
 
